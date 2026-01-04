@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work Timer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Work Timer</h1>
+    </header>
+
+    <main>
+      <section class="timer-section">
+        <div class="timer-display" id="timerDisplay">00:00:00</div>
+        
+        <div class="task-input">
+          <input type="text" id="taskInput" placeholder="What are you working on?" />
+        </div>
+
+        <div class="controls">
+          <button id="startBtn" class="btn btn-start">Start</button>
+          <button id="pauseBtn" class="btn btn-pause" disabled>Pause</button>
+          <button id="stopBtn" class="btn btn-stop" disabled>Stop & Save</button>
+        </div>
+      </section>
+
+      <section class="stats-section">
+        <h2>Statistics</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Today</span>
+            <span class="stat-value" id="todayStat">00:00:00</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">This Week</span>
+            <span class="stat-value" id="weekStat">00:00:00</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">All Time</span>
+            <span class="stat-value" id="allTimeStat">00:00:00</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="log-section">
+        <h2>Recent Sessions</h2>
+        <div class="log-list" id="logList">
+          <p class="empty-state">No sessions logged yet.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

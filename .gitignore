@@ -1,0 +1,5 @@
+node_modules/
+worktimer.db
+worklog.json
+*.log
+.DS_Store
