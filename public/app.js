@@ -1,3 +1,5 @@
+const STORAGE_KEY = 'worktimer_sessions';
+
 let startTime = null;
 let pausedTime = 0;
 let pauseStart = null;
@@ -13,6 +15,15 @@ const logList = document.getElementById('logList');
 const todayStat = document.getElementById('todayStat');
 const weekStat = document.getElementById('weekStat');
 const allTimeStat = document.getElementById('allTimeStat');
+
+function loadSessions() {
+  const data = localStorage.getItem(STORAGE_KEY);
+  return data ? JSON.parse(data) : [];
+}
+
+function saveSessions(sessions) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+}
 
 function formatDuration(ms) {
   const seconds = Math.floor(ms / 1000) % 60;
@@ -61,7 +72,7 @@ function pauseTimer() {
   }
 }
 
-async function stopTimer() {
+function stopTimer() {
   if (!startTime) return;
   
   clearInterval(timerInterval);
@@ -70,16 +81,16 @@ async function stopTimer() {
   const endTime = new Date().toISOString();
   const startTimeISO = new Date(startTime).toISOString();
   
-  await fetch('/api/sessions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      task: taskInput.value || 'Unspecified',
-      startTime: startTimeISO,
-      endTime: endTime,
-      duration: duration
-    })
+  const sessions = loadSessions();
+  sessions.unshift({
+    id: Date.now(),
+    task: taskInput.value || 'Unspecified',
+    startTime: startTimeISO,
+    endTime: endTime,
+    duration: duration,
+    createdAt: new Date().toISOString()
   });
+  saveSessions(sessions);
   
   startTime = null;
   pausedTime = 0;
@@ -93,13 +104,19 @@ async function stopTimer() {
   stopBtn.disabled = true;
   startBtn.textContent = 'Start';
   
-  loadSessions();
-  loadStats();
+  renderSessions();
+  renderStats();
 }
 
-async function loadSessions() {
-  const res = await fetch('/api/sessions');
-  const sessions = await res.json();
+function deleteSession(id) {
+  const sessions = loadSessions().filter(s => s.id !== id);
+  saveSessions(sessions);
+  renderSessions();
+  renderStats();
+}
+
+function renderSessions() {
+  const sessions = loadSessions().slice(0, 100);
   
   if (sessions.length === 0) {
     logList.innerHTML = '<p class="empty-state">No sessions logged yet.</p>';
@@ -110,7 +127,7 @@ async function loadSessions() {
     <div class="log-item" data-id="${s.id}">
       <span class="log-task">${escapeHtml(s.task)}</span>
       <div class="log-meta">
-        <span class="log-date">${formatDate(s.created_at)}</span>
+        <span class="log-date">${formatDate(s.createdAt)}</span>
         <span class="log-duration">${formatDuration(s.duration)}</span>
         <button class="log-delete" onclick="deleteSession(${s.id})">✕</button>
       </div>
@@ -118,19 +135,31 @@ async function loadSessions() {
   `).join('');
 }
 
-async function deleteSession(id) {
-  await fetch(`/api/sessions/${id}`, { method: 'DELETE' });
-  loadSessions();
-  loadStats();
-}
-
-async function loadStats() {
-  const res = await fetch('/api/stats');
-  const stats = await res.json();
+function renderStats() {
+  const sessions = loadSessions();
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const weekStart = todayStart - (7 * 24 * 60 * 60 * 1000);
   
-  todayStat.textContent = formatDuration(stats.today);
-  weekStat.textContent = formatDuration(stats.week);
-  allTimeStat.textContent = formatDuration(stats.allTime);
+  let todayTotal = 0;
+  let weekTotal = 0;
+  let allTimeTotal = 0;
+  
+  sessions.forEach(s => {
+    const sessionTime = new Date(s.createdAt).getTime();
+    allTimeTotal += s.duration;
+    
+    if (sessionTime >= todayStart) {
+      todayTotal += s.duration;
+    }
+    if (sessionTime >= weekStart) {
+      weekTotal += s.duration;
+    }
+  });
+  
+  todayStat.textContent = formatDuration(todayTotal);
+  weekStat.textContent = formatDuration(weekTotal);
+  allTimeStat.textContent = formatDuration(allTimeTotal);
 }
 
 function formatDate(isoString) {
@@ -148,5 +177,5 @@ startBtn.addEventListener('click', startTimer);
 pauseBtn.addEventListener('click', pauseTimer);
 stopBtn.addEventListener('click', stopTimer);
 
-loadSessions();
-loadStats();
+renderSessions();
+renderStats();
