@@ -11,7 +11,10 @@
     <header>
       <div class="header-content">
         <h1>Work Timer</h1>
-        <div class="clock" id="clock">--:--</div>
+        <div class="header-right">
+          <div class="clock" id="clock">--:--</div>
+          <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+        </div>
       </div>
     </header>
 
@@ -48,8 +51,31 @@
         </div>
       </section>
 
+      <section class="calendar-section">
+        <div class="calendar-header">
+          <h2>Work Calendar</h2>
+          <div class="calendar-nav">
+            <button class="calendar-btn" id="prevBtn">← Prev</button>
+            <span class="calendar-month" id="monthLabel"></span>
+            <button class="calendar-btn" id="nextBtn">Next →</button>
+          </div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="calendar-legend">
+          <span class="legend-item"><span class="legend-dot" style="background: #f5f5f5;"></span> No work</span>
+          <span class="legend-item"><span class="legend-dot" style="background: #c8e6c9;"></span> 1-2h</span>
+          <span class="legend-item"><span class="legend-dot" style="background: #81c784;"></span> 2-4h</span>
+          <span class="legend-item"><span class="legend-dot" style="background: #4caf50;"></span> 4-6h</span>
+          <span class="legend-item"><span class="legend-dot" style="background: #2e7d32;"></span> 6h+</span>
+        </div>
+        <div class="day-detail" id="dayDetail"></div>
+      </section>
+
       <section class="log-section">
-        <h2>Recent Sessions</h2>
+        <div class="log-header">
+          <h2>Recent Sessions</h2>
+          <button class="btn btn-export" id="exportBtn">↓ Export CSV</button>
+        </div>
         <div class="log-list" id="logList">
           <p class="empty-state">No sessions logged yet.</p>
         </div>
