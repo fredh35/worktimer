@@ -53,10 +53,30 @@ header {
   color: var(--white);
 }
 
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
 header h1 {
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.5px;
+  flex: 1;
+}
+
+.clock {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-family: 'Gotham Narrow', Arial, monospace;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  min-width: 80px;
+  text-align: center;
+  letter-spacing: 1px;
 }
 
 .timer-section {
@@ -296,6 +316,20 @@ header h1 {
 
   header h1 {
     font-size: 1.5rem;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  header h1 {
+    flex: none;
+  }
+
+  .clock {
+    font-size: 1.25rem;
+    min-width: 70px;
   }
 
   .btn {

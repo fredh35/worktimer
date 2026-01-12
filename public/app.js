@@ -15,6 +15,7 @@ const logList = document.getElementById('logList');
 const todayStat = document.getElementById('todayStat');
 const weekStat = document.getElementById('weekStat');
 const allTimeStat = document.getElementById('allTimeStat');
+const clockDisplay = document.getElementById('clock');
 
 function loadSessions() {
   const data = localStorage.getItem(STORAGE_KEY);
@@ -173,9 +174,20 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+function updateClock() {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  clockDisplay.textContent = `${hours}:${minutes}`;
+}
+
 startBtn.addEventListener('click', startTimer);
 pauseBtn.addEventListener('click', pauseTimer);
 stopBtn.addEventListener('click', stopTimer);
+
+// Update clock immediately and then every minute
+updateClock();
+setInterval(updateClock, 60000);
 
 renderSessions();
 renderStats();
