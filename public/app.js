@@ -21,6 +21,7 @@ import { Export } from './modules/export.js';
 import { Theme } from './modules/theme.js';
 import { Utils } from './modules/utils.js';
 import { Sound } from './modules/sound.js';
+import { Automation } from './modules/automation.js';
 
 // ============================================================================
 // Initialization
@@ -54,6 +55,14 @@ Calendar.init({
 });
 Theme.init(elementMap.themeToggle);
 
+// Initialize n8n automation webhook (if available)
+// Configure via environment or query parameter
+const params = new URLSearchParams(window.location.search);
+const n8nWebhook = params.get('n8n_webhook');
+if (n8nWebhook) {
+  Automation.init(decodeURIComponent(n8nWebhook));
+}
+
 // ============================================================================
 // Timer Control Handlers
 // ============================================================================
@@ -84,10 +93,14 @@ function stopTimer() {
   if (!result) return;
   
   const { duration, endTime, startTimeISO } = result;
-  Storage.addSession(elementMap.taskInput.value, startTimeISO, endTime, duration);
+  const task = elementMap.taskInput.value || 'Unspecified';
+  Storage.addSession(task, startTimeISO, endTime, duration);
   
   // Play success sound
   Sound.playSessionSaved();
+  
+  // Trigger n8n automation workflow
+  Automation.notifySessionSaved(task, duration);
   
   UI.resetTimerDisplay();
   elementMap.startBtn.disabled = false;
