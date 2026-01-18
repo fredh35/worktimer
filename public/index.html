@@ -26,6 +26,10 @@
           <input type="text" id="taskInput" placeholder="What are you working on?" />
         </div>
 
+        <div class="description-input">
+          <textarea id="descriptionInput" placeholder="Task description (max 3 sentences)" rows="2" maxlength="200"></textarea>
+        </div>
+
         <div class="controls">
           <button id="startBtn" class="btn btn-start">Start</button>
           <button id="pauseBtn" class="btn btn-pause" disabled>Pause</button>
@@ -83,6 +87,6 @@
     </main>
   </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

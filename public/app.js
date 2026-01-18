@@ -94,7 +94,8 @@ function stopTimer() {
   
   const { duration, endTime, startTimeISO } = result;
   const task = elementMap.taskInput.value || 'Unspecified';
-  Storage.addSession(task, startTimeISO, endTime, duration);
+  const description = document.getElementById('descriptionInput').value || '';
+  Storage.addSession(task, startTimeISO, endTime, duration, description);
   
   // Play success sound
   Sound.playSessionSaved();
@@ -103,6 +104,7 @@ function stopTimer() {
   Automation.notifySessionSaved(task, duration);
   
   UI.resetTimerDisplay();
+  document.getElementById('descriptionInput').value = '';
   elementMap.startBtn.disabled = false;
   elementMap.pauseBtn.disabled = true;
   elementMap.stopBtn.disabled = true;
