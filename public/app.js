@@ -22,6 +22,7 @@ import { Theme } from './modules/theme.js';
 import { Utils } from './modules/utils.js';
 import { Sound } from './modules/sound.js';
 import { Automation } from './modules/automation.js';
+import { CopilotSuggestions } from './modules/copilot-suggestions.js';
 
 // ============================================================================
 // Initialization
@@ -70,7 +71,14 @@ if (n8nWebhook) {
 function startTimer() {
   Timer.start();
   Timer.interval = setInterval(() => {
-    UI.updateTimerDisplay(Timer.getElapsed());
+    const elapsed = Timer.getElapsed();
+    UI.updateTimerDisplay(elapsed);
+    
+    // Update session suggestions every 10 seconds
+    if (Math.floor(elapsed / 1000) % 10 === 0) {
+      const taskName = elementMap.taskInput.value || 'Work';
+      UI.displaySessionSuggestions(elapsed, taskName);
+    }
   }, 100);
   
   elementMap.startBtn.disabled = true;
@@ -153,6 +161,17 @@ elementMap.themeToggle.addEventListener('click', () => {
   Theme.toggle();
 });
 
+// Task input listener for smart suggestions
+elementMap.taskInput.addEventListener('input', async () => {
+  await UI.displayTaskSuggestions();
+});
+
+// Global function to fill task suggestion
+window.fillTaskSuggestion = (task) => {
+  elementMap.taskInput.value = task;
+  elementMap.taskInput.focus();
+};
+
 // ============================================================================
 // Initialization
 // ============================================================================
@@ -168,3 +187,7 @@ UI.renderSessions();
 UI.updateStats();
 Calendar.render();
 Calendar.updateToToday();
+
+// Display initial productivity tip and task suggestions
+UI.displayProductivityTip();
+UI.displayTaskSuggestions();

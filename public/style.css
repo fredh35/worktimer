@@ -58,6 +58,16 @@ body.dark-mode {
   --gray-500: #888888;
   --gray-700: #b8b8b8;
   --gray-900: #e8e8e8;
+  
+  --suggestion-bg: #2d3b2f;
+  --suggestion-border: #5a7d5c;
+  --suggestion-text: #a8d5aa;
+}
+
+body:not(.dark-mode) {
+  --suggestion-bg: #e8f5e9;
+  --suggestion-border: #81c784;
+  --suggestion-text: #2e7d32;
 }
 
 body {
@@ -690,4 +700,71 @@ header h1 {
   .calendar-day-hours {
     font-size: 0.55rem;
   }
+}
+/* Smart Suggestions Styles */
+.suggestions-container {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--suggestion-bg);
+  border: 2px solid var(--suggestion-border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: var(--suggestion-text);
+  line-height: 1.4;
+}
+
+.suggestion-item.insight {
+  font-weight: 500;
+  font-style: italic;
+}
+
+.suggestion-item.tip {
+  background: rgba(255, 165, 0, 0.1);
+  border-left: 3px solid var(--sepaq-orange);
+  padding-left: 0.5rem;
+}
+
+.suggestion-item.break {
+  background: rgba(255, 152, 0, 0.1);
+  border-left: 3px solid #ff9800;
+  padding-left: 0.5rem;
+}
+
+.task-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.suggestion-chip {
+  padding: 0.5rem 1rem;
+  background: var(--sepaq-green);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.suggestion-chip:hover {
+  background: var(--sepaq-green-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.suggestion-chip:active {
+  transform: translateY(0);
 }

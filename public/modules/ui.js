@@ -5,9 +5,11 @@
 import { Utils } from './utils.js';
 import { Stats } from './stats.js';
 import { Storage } from './storage.js';
+import { CopilotSuggestions } from './copilot-suggestions.js';
 
 export const UI = {
   elements: {},
+  suggestionUpdateTimeout: null,
 
   init(elementMap) {
     this.elements = elementMap;
@@ -61,5 +63,93 @@ export const UI = {
   resetTimerDisplay() {
     this.elements.timerDisplay.textContent = '00:00:00';
     this.elements.taskInput.value = '';
+  },
+
+  /**
+   * Display task suggestions
+   */
+  async displayTaskSuggestions() {
+    try {
+      const suggestions = await CopilotSuggestions.getTaskSuggestions();
+      const container = document.getElementById('taskSuggestionsContainer');
+      
+      if (!container) return;
+      
+      if (suggestions.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      
+      container.innerHTML = `
+        <div class="suggestions-container">
+          <div class="task-suggestions">
+            ${suggestions.map(task => `
+              <button class="suggestion-chip" onclick="window.fillTaskSuggestion('${Utils.escapeHtml(task)}')">
+                ${Utils.escapeHtml(task)}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } catch (error) {
+      console.error('Error displaying task suggestions:', error);
+    }
+  },
+
+  /**
+   * Display session insights and recommendations
+   */
+  async displaySessionSuggestions(elapsedTime, taskName) {
+    try {
+      const container = document.getElementById('sessionSuggestionsContainer');
+      
+      if (!container) return;
+      
+      // Only show suggestions during active sessions
+      if (elapsedTime === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      
+      // Generate insights
+      const insight = await CopilotSuggestions.generateSessionInsight(elapsedTime, taskName);
+      const breakRec = CopilotSuggestions.getBreakRecommendation(elapsedTime);
+      
+      let html = `<div class="suggestions-container">`;
+      
+      if (insight) {
+        html += `<div class="suggestion-item insight">💡 ${Utils.escapeHtml(insight)}</div>`;
+      }
+      
+      if (breakRec) {
+        html += `<div class="suggestion-item break">${Utils.escapeHtml(breakRec)}</div>`;
+      }
+      
+      html += `</div>`;
+      
+      container.innerHTML = html;
+    } catch (error) {
+      console.error('Error displaying session suggestions:', error);
+    }
+  },
+
+  /**
+   * Display daily productivity tip
+   */
+  async displayProductivityTip() {
+    try {
+      const tip = await CopilotSuggestions.getProductivityTip();
+      const container = document.getElementById('sessionSuggestionsContainer');
+      
+      if (!container || !tip) return;
+      
+      const html = `<div class="suggestions-container"><div class="suggestion-item tip">${Utils.escapeHtml(tip)}</div></div>`;
+      
+      if (container.innerHTML === '') {
+        container.innerHTML = html;
+      }
+    } catch (error) {
+      console.error('Error displaying productivity tip:', error);
+    }
   }
 };
