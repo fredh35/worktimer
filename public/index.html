@@ -36,7 +36,14 @@
           <button id="startBtn" class="btn btn-start">Start</button>
           <button id="pauseBtn" class="btn btn-pause" disabled>Pause</button>
           <button id="stopBtn" class="btn btn-stop" disabled>Stop & Save</button>
+          <button id="pomodoroModeBtn" class="btn btn-secondary" onclick="window.togglePomodoroMode()" title="Enable Pomodoro 25/5 technique">Pomodoro OFF</button>
         </div>
+
+        <div id="pomodoroProgressBar" style="display: none; margin-top: 8px;"></div>
+        <div id="pomodoroStatusContainer"></div>
+        <div id="pomodoroBreakContainer"></div>
+        <div id="interruptionTagsContainer"></div>
+        <div id="pomodoroIndicatorsContainer"></div>
 
         <div id="sessionSuggestionsContainer"></div>
       </section>

@@ -23,6 +23,8 @@ import { Utils } from './modules/utils.js';
 import { Sound } from './modules/sound.js';
 import { Automation } from './modules/automation.js';
 import { CopilotSuggestions } from './modules/copilot-suggestions.js';
+import { Pomodoro } from './modules/pomodoro.js';
+import { Interruptions } from './modules/interruptions.js';
 
 // ============================================================================
 // Initialization
@@ -56,6 +58,9 @@ Calendar.init({
 });
 Theme.init(elementMap.themeToggle);
 
+// Initialize Pomodoro module
+Pomodoro.init();
+
 // Initialize n8n automation webhook (if available)
 // Configure via environment or query parameter
 const params = new URLSearchParams(window.location.search);
@@ -69,18 +74,42 @@ if (n8nWebhook) {
 // ============================================================================
 
 function startTimer() {
+  // If Pomodoro mode is enabled, set target duration
+  if (Pomodoro.isMode() && !Pomodoro.isInBreak()) {
+    Pomodoro.startWorkCycle();
+    const targetMs = Pomodoro.getRecommendedDuration();
+    Timer.setPomodoroTarget(targetMs);
+  }
+
   Timer.start();
   Timer.interval = setInterval(() => {
     const elapsed = Timer.getElapsed();
     UI.updateTimerDisplay(elapsed);
-    
+
+    // Update Pomodoro UI every 100ms
+    if (Pomodoro.isMode()) {
+      UI.displayPomodoroStatus(elapsed);
+      UI.updatePomodoroProgress(Timer.getPomodoroProgress());
+      UI.displayInterruptionTags();
+      UI.displayPomodoroBreakSuggestion();
+      UI.displayPomodoroIndicators();
+    }
+
     // Update session suggestions every 10 seconds
     if (Math.floor(elapsed / 1000) % 10 === 0) {
       const taskName = elementMap.taskInput.value || 'Work';
       UI.displaySessionSuggestions(elapsed, taskName);
     }
+
+    // Check if Pomodoro work target reached
+    if (Pomodoro.isMode() && !Pomodoro.isInBreak() && Timer.hasPomodoroTargetReached()) {
+      pauseTimer();
+      Sound.playSessionSaved();
+      Pomodoro.completeWorkCycle(Interruptions.getCount());
+      UI.displayPomodoroBreakSuggestion();
+    }
   }, 100);
-  
+
   elementMap.startBtn.disabled = true;
   elementMap.pauseBtn.disabled = false;
   elementMap.stopBtn.disabled = false;
@@ -99,25 +128,57 @@ function pauseTimer() {
 function stopTimer() {
   const result = Timer.stop();
   if (!result) return;
-  
+
   const { duration, endTime, startTimeISO } = result;
   const task = elementMap.taskInput.value || 'Unspecified';
   const description = document.getElementById('descriptionInput').value || '';
-  Storage.addSession(task, startTimeISO, endTime, duration, description);
-  
+
+  // Capture interruption data before resetting
+  const interruptionData = Interruptions.resetAndGet();
+
+  // Create session with optional Pomodoro metadata
+  const session = {
+    task,
+    description,
+    startTime: startTimeISO,
+    endTime,
+    duration,
+    isPomodoroSession: Pomodoro.isMode(),
+    pomodoroPhase: Pomodoro.isMode() ? (Pomodoro.isInBreak() ? 'break' : 'work') : null,
+    ...interruptionData  // Spread interruption data into session
+  };
+
+  Storage.addSession(session.task, session.startTime, session.endTime, session.duration, session.description);
+
+  // If using Pomodoro, complete break phase and prepare for next cycle
+  if (Pomodoro.isMode() && Pomodoro.isInBreak()) {
+    Pomodoro.completeBreakPhase();
+  }
+
+  // Clear timer target
+  Timer.clearPomodoroTarget();
+
   // Play success sound
   Sound.playSessionSaved();
-  
+
   // Trigger n8n automation workflow
   Automation.notifySessionSaved(task, duration);
-  
+
   UI.resetTimerDisplay();
   document.getElementById('descriptionInput').value = '';
   elementMap.startBtn.disabled = false;
   elementMap.pauseBtn.disabled = true;
   elementMap.stopBtn.disabled = true;
   elementMap.startBtn.textContent = 'Start';
-  
+
+  // Clear Pomodoro UI containers
+  if (Pomodoro.isMode()) {
+    document.getElementById('pomodoroStatusContainer').innerHTML = '';
+    document.getElementById('interruptionTagsContainer').innerHTML = '';
+    document.getElementById('pomodoroBreakContainer').innerHTML = '';
+    document.getElementById('pomodoroProgressBar').style.display = 'none';
+  }
+
   refreshUI();
 }
 
@@ -128,6 +189,39 @@ function stopTimer() {
 window.deleteSessionHandler = (id) => {
   Storage.deleteSession(id);
   refreshUI();
+};
+
+// ============================================================================
+// Pomodoro Handlers
+// ============================================================================
+
+window.togglePomodoroMode = () => {
+  const isCurrentlyEnabled = Pomodoro.isMode();
+  Pomodoro.setMode(!isCurrentlyEnabled);
+
+  // Update UI
+  const btn = document.getElementById('pomodoroModeBtn');
+  if (btn) {
+    btn.style.background = !isCurrentlyEnabled ? '#4CAF50' : '#ccc';
+    btn.style.color = !isCurrentlyEnabled ? 'white' : '#333';
+    btn.textContent = !isCurrentlyEnabled ? '⏱️ Pomodoro ON' : 'Pomodoro OFF';
+  }
+
+  // Clear Pomodoro containers if disabling
+  if (isCurrentlyEnabled) {
+    Interruptions.reset();
+    Pomodoro.reset();
+    document.getElementById('pomodoroStatusContainer').innerHTML = '';
+    document.getElementById('interruptionTagsContainer').innerHTML = '';
+    document.getElementById('pomodoroBreakContainer').innerHTML = '';
+    document.getElementById('pomodoroProgressBar').style.display = 'none';
+    document.getElementById('pomodoroIndicatorsContainer').innerHTML = '';
+  }
+};
+
+window.logInterruption = (type) => {
+  Interruptions.log(type);
+  UI.displayInterruptionTags();
 };
 
 // ============================================================================

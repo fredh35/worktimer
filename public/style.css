@@ -283,6 +283,36 @@ header h1 {
   box-shadow: 0 4px 12px rgba(0, 148, 192, 0.3);
 }
 
+.btn-secondary {
+  background: #ccc;
+  color: #333;
+  text-transform: none;
+  font-weight: normal;
+  font-size: 0.9rem;
+  padding: 0.625rem 1.25rem;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #aaa;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-export {
+  background: var(--sepaq-orange);
+  color: var(--white);
+  text-transform: none;
+  font-weight: normal;
+  font-size: 0.9rem;
+  padding: 0.625rem 1.25rem;
+}
+
+.btn-export:hover:not(:disabled) {
+  background: var(--sepaq-orange-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(250, 166, 26, 0.3);
+}
+
 .stats-section,
 .log-section {
   background: var(--white);

@@ -8,6 +8,7 @@ export const Timer = {
   pauseStart: null,
   isPaused: false,
   interval: null,
+  pomodoroTargetMs: null,  // For Pomodoro mode: target duration in ms
 
   start() {
     if (!this.startTime) {
@@ -60,5 +61,37 @@ export const Timer = {
 
   isStopped() {
     return this.startTime === null;
+  },
+
+  /**
+   * Set Pomodoro target duration (in milliseconds)
+   * Used to show progress towards Pomodoro goal
+   */
+  setPomodoroTarget(ms) {
+    this.pomodoroTargetMs = ms;
+  },
+
+  /**
+   * Check if Pomodoro target has been reached
+   */
+  hasPomodoroTargetReached() {
+    if (!this.pomodoroTargetMs) return false;
+    return this.getElapsed() >= this.pomodoroTargetMs;
+  },
+
+  /**
+   * Get progress towards Pomodoro target (0-100%)
+   */
+  getPomodoroProgress() {
+    if (!this.pomodoroTargetMs) return 0;
+    const percent = (this.getElapsed() / this.pomodoroTargetMs) * 100;
+    return Math.min(percent, 100);
+  },
+
+  /**
+   * Clear Pomodoro target
+   */
+  clearPomodoroTarget() {
+    this.pomodoroTargetMs = null;
   }
 };
